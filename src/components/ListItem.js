@@ -1,18 +1,50 @@
 import React, { Component } from 'react';
-import { Text } from 'react-native';
+import {
+  Text,
+  TouchableWithoutFeedback,
+  View,
+  LayoutAnimation
+ } from 'react-native';
+import { connect } from 'react-redux';
 import { CardSection } from './common';
+// Used to import a bunch of things from a file that doesn't export one single thing
+import * as actions from '../actions';
 
 class ListItem extends Component {
+  componentWillUpdate() {
+    LayoutAnimation.spring();
+  }
+  renderDescription() {
+    const { library, expanded } = this.props;
+
+    if (expanded) {
+      return (
+        <CardSection>
+          <Text style={{ flex: 1 }}>
+            {library.description}
+          </Text>
+        </CardSection>
+      );
+    }
+  }
   render() {
     const { titleStyle } = styles;
+    const { id, title } = this.props.library;
 
     return (
-      <CardSection>
-        <Text style={titleStyle}>{
-          this.props.library.title}
-        </Text>
-      </CardSection>
-    )
+      <TouchableWithoutFeedback
+        onPress={() => this.props.selectLibrary(id)}
+      >
+        <View>
+          <CardSection>
+            <Text style={titleStyle}>
+              {title}
+            </Text>
+          </CardSection>
+          {this.renderDescription()}
+        </View>
+      </TouchableWithoutFeedback>
+    );
 
   }
 }
@@ -24,4 +56,12 @@ const styles = {
   }
 };
 
-export default ListItem;
+// ownProps are passed to the component that we are wrapping - the this.props in each component
+const mapStateToProps = (state, ownProps) => {
+  const expanded = state.selectedLibraryId === ownProps.library.id;
+
+  return { expanded };
+};
+
+// the first argument HAS to be mapStateToProps
+export default connect(mapStateToProps, actions)(ListItem);
